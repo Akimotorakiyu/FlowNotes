@@ -1,29 +1,81 @@
-import { defineView } from "@shrio/shrio"
+import {
+  defineView,
+  defineState,
+  defineFactoryComponent,
+} from "@shrio/shrio";
 
-export const DayRangeView = defineView(() => {
-    const offset = `500px`
-    return <div class={` h-full flex `}>
+export const rangeStatus = defineState(() => {
+  const reactiveState = {
+    height: 100,
+    offsetY:0
+  };
+  return {
+    isMouseDown: false,
+    reactiveState,
+  };
+});
+
+export const DayRangeView = defineFactoryComponent(rangeStatus, (state) => {
+  return (
+    <div class={` h-full flex `}>
       <div class={` h-full w-10 bg-gray-200 flex items-center`}>
-        <div class={` h-12 bg-light-50 rounded-md flex-1`} style={
-          {
-          }
-        }></div>
+        <div
+          class={`bg-light-50 rounded-md flex flex-1 flex-col min-h-min`}
+          style={{
+            height: `${state.reactiveState.height}px`,
+          }}
+        >
+          <div
+            class={` h-3 bg-green-300 cursor-pointer`}
+            onpointerdown={(event: PointerEvent) => {
+              const element = event.currentTarget as HTMLDivElement;
+              element.setPointerCapture(event.pointerId);
+              state.isMouseDown = true;
+
+              state.reactiveState.offsetY = event.offsetY
+
+            }}
+            onpointermove={(event: PointerEvent) => {
+              if (state.isMouseDown) {
+                const element = event.currentTarget as HTMLDivElement;
+                state.reactiveState.height -= (event.offsetY - state.reactiveState.offsetY) * 2;
+                element.parentElement!.style.removeProperty("height",
+                  )
+                element.parentElement!.style.setProperty("height",
+                  state.reactiveState.height + "px")
+                
+                
+              }
+            }}
+            onpointerup={(event: PointerEvent) => {
+              state.isMouseDown = false;
+              const element = event.currentTarget as HTMLDivElement;
+              element.releasePointerCapture(event.pointerId);
+            }}
+          ></div>
+          <div class={`flex-1`}></div>
+          <div class={` h-3 bg-green-300 cursor-pointer`}></div>
+        </div>
       </div>
       <div class={` h-full w-32 bg-gray-50`}></div>
     </div>
-})
-  
-export  const DateRangeView = defineView(() => {
-    const offset = `500px`
-    return <div class={` h-full flex `}>
-      <div class={` h-full w-10 bg-gray-200  flex items-center`}>
-        <div class={` h-12 bg-light-50 rounded-md flex-1`} style={
-          {
-          }
-        }></div>
+  );
+});
+
+export const DateRangeView = defineView(() => {
+  return (
+    <div class={` h-full flex `}>
+      <div class={` h-full w-10 bg-gray-200 flex items-center`}>
+        <div
+          class={` h-32 bg-light-50 rounded-md flex flex-1 flex-col`}
+          style={{}}
+        >
+          <div class={` h-3 bg-green-300 cursor-pointer`}></div>
+          <div class={`flex-1`}></div>
+          <div class={` h-3 bg-green-300 cursor-pointer`}></div>
+        </div>
       </div>
       <div class={` h-full w-18 bg-gray-50`}></div>
     </div>
-})
-  
-  
+  );
+});
