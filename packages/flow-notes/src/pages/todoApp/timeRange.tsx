@@ -20,7 +20,7 @@ export const rangeStatus = defineState(() => {
   };
 });
 
-const FlowNoteDisplayer = defineView(() => {
+const DayFlowNoteTimeRangeDisplayer = defineView(() => {
   const operation = portal.inject();
 
   return (
@@ -42,16 +42,50 @@ const FlowNoteDisplayer = defineView(() => {
                   (operation.data.dayRange.end - operation.data.dayRange.start)
                 }%`,
               }}
+            ></div>
+          );
+        })
+      )}
+    </>
+  );
+});
+const FlowNoteDisplayer = defineView(() => {
+  const operation = portal.inject();
+
+  return (
+    <>
+      {operation.data.todoList.map(
+        dynamic((setKey, item) => {
+          setKey(item.id);
+          return (
+            <div
+              class={`absolute  w-full px-4`}
+              style={{
+                top: `${
+                  ((item.duration.start - operation.data.dayRange.start) *
+                    100) /
+                  (operation.data.dayRange.end - operation.data.dayRange.start)
+                }%`,
+                height: `${
+                  ((item.duration.end - item.duration.start) * 100) /
+                  (operation.data.dayRange.end - operation.data.dayRange.start)
+                }%`,
+              }}
             >
               <div
-                class={` absolute translate-x-full right-0 transform max-h-full rounded bg-gray-300 px-2 py-2 overflow-auto w-md`}
+                class={` h-full w-full overflow-auto  shadow shadow-orange-100`}
               >
-                <div
-                  class={`w-full h-full outline-none`}
-                  contentEditable="true"
+                <textarea
+                  class={`w-full h-full outline-none resize-none px-4 py-2  text-gray-800`}
+                  onblur={(event: FocusEvent) => {
+                    const element = event.target as HTMLTextAreaElement;
+                    if (item.desc !== element.value) {
+                      item.desc = element.value;
+                    }
+                  }}
                 >
                   {item.desc}
-                </div>
+                </textarea>
               </div>
             </div>
           );
@@ -108,42 +142,55 @@ const TimeIndicator = defineView((props: {}) => {
   );
 });
 
+const AddNewFlowNote = defineView(() => {
+  const operation = portal.inject();
+
+  return (
+    <div
+      class={`h-full w-full bg-transparent relative`}
+      onpointerdown={(event: PointerEvent) => {
+        const element = event.target as HTMLDivElement;
+        console.log("", event.offsetY);
+        const percentage = event.offsetY / element.clientHeight;
+
+        const timeStamp =
+          percentage *
+            (operation.data.dayRange.end - operation.data.dayRange.start) +
+          operation.data.dayRange.start;
+
+        operation.data.todoList.push({
+          id: Math.random() + "",
+          duration: {
+            start: timeStamp,
+            end: addHours(new Date(timeStamp), 2).valueOf(),
+          },
+          desc: "do something",
+          style: {
+            color: "",
+            backgroundcolor: "",
+          },
+          status: "Pending",
+        });
+      }}
+    ></div>
+  );
+});
+
 export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
   const operation = portal.inject();
 
   return (
-    <div class={` h-full w-32 bg-gray-50 relative overflow-hidden`}>
-      <FlowNoteDisplayer></FlowNoteDisplayer>
-      <TimeIndicator></TimeIndicator>
+    <>
+      <div class={` h-full w-32 bg-gray-50 relative overflow-hidden`}>
+        <DayFlowNoteTimeRangeDisplayer></DayFlowNoteTimeRangeDisplayer>
+        <TimeIndicator></TimeIndicator>
+        <AddNewFlowNote></AddNewFlowNote>
+      </div>
 
-      <div
-        class={`h-full w-full bg-transparent relative`}
-        onpointerdown={(event: PointerEvent) => {
-          const element = event.target as HTMLDivElement;
-          console.log("", event.offsetY);
-          const percentage = event.offsetY / element.clientHeight;
-
-          const timeStamp =
-            percentage *
-              (operation.data.dayRange.end - operation.data.dayRange.start) +
-            operation.data.dayRange.start;
-
-          operation.data.todoList.push({
-            id: Math.random() + "",
-            duration: {
-              start: timeStamp,
-              end: addHours(new Date(timeStamp), 2).valueOf(),
-            },
-            desc: "do something",
-            style: {
-              color: "",
-              backgroundcolor: "",
-            },
-            status: "Pending",
-          });
-        }}
-      ></div>
-    </div>
+      <div class={` h-full flex-1 relative overflow-hidden`}>
+        <FlowNoteDisplayer></FlowNoteDisplayer>
+      </div>
+    </>
   );
 });
 export const DayRangeView = defineFactoryComponent(rangeStatus, (state) => {
