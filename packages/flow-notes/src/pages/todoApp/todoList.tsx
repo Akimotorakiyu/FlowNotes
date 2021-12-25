@@ -1,7 +1,7 @@
 import {  defineView ,dynamic} from '@shrio/shrio'
 import { stateSuite } from './state'
 import {startOfToday } from "date-fns"
-
+import { DayRangeView,DateRangeView} from "./timeRange"
 const { portal, StateView } = stateSuite
 
  function transTimeToOffset(time:number,total:number) {
@@ -11,30 +11,37 @@ const { portal, StateView } = stateSuite
    const offset = delta * dy / 1000
    
    return offset
-}
+ }
+
+const ItemsView = defineView(() => {
+  const operation = portal.inject()
+  return  <div class={ `relative`}>
+  {
+    operation.data.todoList.map(dynamic((setKey,item,index) => {
+      setKey(item.id)
+
+      return <>
+        <div class={` absolute rounded-lg border-gray-500 border-2 px-4 py-2`} style={
+          {
+            ...item.style,
+            transform:`translateY(${index*100}px)`
+          }
+        }>{ item.desc+transTimeToOffset(item.duration.start,1000)}</div>
+      </>
+    }))
+  }
+</div>
+})
+
 
 export const FlowNotesApp = defineView((props) => {
   const operation = portal.inject()
 
   return (
     <>
-      <div class={` min-h-screen`}>
-        <div class={ `relative`}>
-          {
-            operation.data.todoList.map(dynamic((setKey,item,index) => {
-              setKey(item.id)
-
-              return <>
-                <div class={` absolute rounded-lg border-gray-500 border-2 px-4 py-2`} style={
-                  {
-                    ...item.style,
-                    transform:`translateY(${index*100}px)`
-                  }
-                }>{ item.desc+transTimeToOffset(item.duration.start,1000)}</div>
-              </>
-            }))
-          }
-        </div>
+      <div class={`h-screen flex`}>
+        <DateRangeView></DateRangeView>
+        <DayRangeView></DayRangeView>
       </div>
     </>
   )
