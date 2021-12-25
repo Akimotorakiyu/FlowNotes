@@ -6,16 +6,38 @@ export const genTempData = () => {
       desc: 'coding',
       id: '1',
       status: 'Pending',
+      "duration": {
+        start: Date.now(),
+        end:Date.now(),
+      },
+      style: {
+        color: "red",
+        backgroundcolor:""
+      }
     },
     {
       desc: 'sleeping',
       id: '2',
-      status: 'Completed',
+      status: 'Completed',  "duration": {
+        start: Date.now(),
+        end:Date.now(),
+      },
+      style: {
+        color: "red",
+        backgroundcolor:""
+      }
     },
     {
       desc: 'learning',
       id: '3',
-      status: 'Pending',
+      status: 'Pending',  "duration": {
+        start: Date.now(),
+        end:Date.now(),
+      },
+      style: {
+        color: "red",
+        backgroundcolor:""
+      }
     },
   ]
 
