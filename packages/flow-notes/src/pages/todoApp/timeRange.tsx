@@ -49,25 +49,43 @@ export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
 
   return (
     <div class={` h-full w-32 bg-gray-50 relative `}>
-      <div
-        class={`absolute h-16 bg-green-400 w-full `}
-        style={{
-          transform: "translateY(200px)",
-        }}
-      >
-        <div
-          class={` absolute translate-x-full right-0 transform max-h-full rounded bg-gray-300 px-2 py-2 overflow-auto w-md`}
-        >
-          <div class={`w-full h-full outline-none`} contentEditable="true">
-            吃了五碗面吃了五碗面asasdasd吃了五碗面
-          </div>
-        </div>
-      </div>
+      {operation.data.todoList.map(
+        dynamic((setKey, item) => {
+          setKey(item.id);
+          return (
+            <div
+              class={`absolute  bg-green-400 w-full `}
+              style={{
+                top: `${
+                  ((item.duration.start - operation.data.dayRange.start) *
+                    100) /
+                  (operation.data.dayRange.end - operation.data.dayRange.start)
+                }%`,
+                height: `${
+                  ((item.duration.end - item.duration.start) * 100) /
+                  (operation.data.dayRange.end - operation.data.dayRange.start)
+                }%`,
+              }}
+            >
+              <div
+                class={` absolute translate-x-full right-0 transform max-h-full rounded bg-gray-300 px-2 py-2 overflow-auto w-md`}
+              >
+                <div
+                  class={`w-full h-full outline-none`}
+                  contentEditable="true"
+                >
+                  {item.desc}
+                </div>
+              </div>
+            </div>
+          );
+        })
+      )}
 
       {showEr.map(
         dynamic((setKey, date) => {
           setKey(date.valueOf() + "");
-          const str = format(date, "hh");
+          const str = format(date, "HH");
 
           return (
             <div

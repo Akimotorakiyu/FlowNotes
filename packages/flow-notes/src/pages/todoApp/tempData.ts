@@ -1,45 +1,22 @@
-import { ITodoItem } from './type'
+import { ITodoItem } from "./type";
+import { subHours, addHours } from "date-fns";
 
 export const genTempData = () => {
   const todoList: ITodoItem[] = [
     {
-      desc: 'coding',
-      id: '1',
-      status: 'Pending',
-      "duration": {
+      desc: "coding",
+      id: "1",
+      status: "Pending",
+      duration: {
         start: Date.now(),
-        end:Date.now(),
+        end: addHours(new Date(), 2).valueOf(),
       },
       style: {
         color: "red",
-        backgroundcolor:""
-      }
-    },
-    {
-      desc: 'sleeping',
-      id: '2',
-      status: 'Completed',  "duration": {
-        start: Date.now(),
-        end:Date.now(),
+        backgroundcolor: "",
       },
-      style: {
-        color: "red",
-        backgroundcolor:""
-      }
     },
-    {
-      desc: 'learning',
-      id: '3',
-      status: 'Pending',  "duration": {
-        start: Date.now(),
-        end:Date.now(),
-      },
-      style: {
-        color: "red",
-        backgroundcolor:""
-      }
-    },
-  ]
+  ];
 
-  return todoList
-}
+  return todoList;
+};

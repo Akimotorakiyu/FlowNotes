@@ -1,7 +1,7 @@
 import { defineStateSuite, shrioReactive } from "@shrio/shrio";
 import { ITodoItem } from "./type";
 import { genTempData } from "./tempData";
-import { startOfToday, endOfToday } from "date-fns";
+import { subHours, addHours } from "date-fns";
 export const stateSuite = defineStateSuite((props: {}, children, context) => {
   const todoList: ITodoItem[] = shrioReactive(genTempData());
 
@@ -11,8 +11,8 @@ export const stateSuite = defineStateSuite((props: {}, children, context) => {
     data: {
       todoList,
       dayRange: {
-        start: startOfToday().valueOf(),
-        end: endOfToday().valueOf(),
+        start: subHours(new Date(), 8).valueOf(),
+        end: addHours(new Date(), 8).valueOf(),
       },
     },
   };
