@@ -1,7 +1,8 @@
 import {  defineView ,dynamic} from '@shrio/shrio'
 import { stateSuite } from './state'
 import {startOfToday } from "date-fns"
-import { DayRangeView,DateRangeView} from "./timeRange"
+import {DayFlowView, DayRangeView, DateRangeView } from "./timeRange"
+
 const { portal, StateView } = stateSuite
 
  function transTimeToOffset(time:number,total:number) {
@@ -42,6 +43,7 @@ export const FlowNotesApp = defineView((props) => {
       <div class={`h-screen flex`}>
         <DateRangeView></DateRangeView>
         <DayRangeView></DayRangeView>
+        <DayFlowView></DayFlowView>
       </div>
     </>
   )
