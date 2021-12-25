@@ -12,6 +12,7 @@
     "vite-plugin-windicss": "^1.4.5"
   },
   "dependencies": {
+    "date-fns": "^2.27.0",
     "windicss": "^3.1.7"
   }
 }

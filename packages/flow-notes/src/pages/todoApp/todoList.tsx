@@ -1,8 +1,17 @@
 import {  defineView ,dynamic} from '@shrio/shrio'
 import { stateSuite } from './state'
+import {startOfToday } from "date-fns"
 
 const { portal, StateView } = stateSuite
 
+ function transTimeToOffset(time:number,total:number) {
+   const zero = startOfToday().valueOf()
+   const delta = time - zero
+   const dy = total/24/60/160
+   const offset = delta * dy / 1000
+   
+   return offset
+}
 
 export const FlowNotesApp = defineView((props) => {
   const operation = portal.inject()
@@ -21,7 +30,7 @@ export const FlowNotesApp = defineView((props) => {
                     ...item.style,
                     transform:`translateY(${index*100}px)`
                   }
-                }>{ item.desc}</div>
+                }>{ item.desc+transTimeToOffset(item.duration.start,1000)}</div>
               </>
             }))
           }
