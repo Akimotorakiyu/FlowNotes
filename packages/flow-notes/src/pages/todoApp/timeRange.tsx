@@ -5,13 +5,7 @@ import {
   dynamic,
 } from "@shrio/shrio";
 import { stateSuite } from "./state";
-import {
-  setHours,
-  format,
-  addHours,
-  setMinutes,
-  setMilliseconds,
-} from "date-fns";
+import { format, addHours, setMilliseconds } from "date-fns";
 
 const { portal } = stateSuite;
 
@@ -26,29 +20,11 @@ export const rangeStatus = defineState(() => {
   };
 });
 
-export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
+const FlowNoteDisplayer = defineView(() => {
   const operation = portal.inject();
 
-  const level = "hours";
-
-  const start = new Date(operation.data.dayRange.start);
-  const end = new Date(operation.data.dayRange.end);
-  let cur = start;
-
-  const showEr: Date[] = [setMilliseconds(start, 0)];
-
-  for (let index = 0; ; index++) {
-    const nextTime = addHours(showEr[index], 1);
-    showEr.push(nextTime);
-    if (nextTime.valueOf() > operation.data.dayRange.end) {
-      break;
-    }
-  }
-
-  console.log(showEr);
-
   return (
-    <div class={` h-full w-32 bg-gray-50 relative `}>
+    <>
       {operation.data.todoList.map(
         dynamic((setKey, item) => {
           setKey(item.id);
@@ -81,11 +57,33 @@ export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
           );
         })
       )}
+    </>
+  );
+});
 
+const TimeIndicator = defineView((props: {}) => {
+  const operation = portal.inject();
+
+  const firstTimeIndicator = setMilliseconds(
+    new Date(operation.data.dayRange.start),
+    0
+  );
+
+  const showEr: Date[] = [firstTimeIndicator];
+
+  for (let index = 0; ; index++) {
+    const nextTimeIndicator = addHours(showEr[index], 1);
+    showEr.push(nextTimeIndicator);
+    if (nextTimeIndicator.valueOf() > operation.data.dayRange.end) {
+      break;
+    }
+  }
+
+  return (
+    <>
       {showEr.map(
         dynamic((setKey, date) => {
           setKey(date.valueOf() + "");
-          const str = format(date, "HH");
 
           return (
             <div
@@ -100,18 +98,49 @@ export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
               <span
                 class={` text-gray-500 font-mono absolute flex items-center -translate-y-1/2 transform`}
               >
-                {str}
+                {format(date, "HH")}
               </span>
             </div>
           );
         })
       )}
+    </>
+  );
+});
+
+export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
+  const operation = portal.inject();
+
+  return (
+    <div class={` h-full w-32 bg-gray-50 relative overflow-hidden`}>
+      <FlowNoteDisplayer></FlowNoteDisplayer>
+      <TimeIndicator></TimeIndicator>
 
       <div
         class={`h-full w-full bg-transparent relative`}
         onpointerdown={(event: PointerEvent) => {
           const element = event.target as HTMLDivElement;
           console.log("", event.offsetY);
+          const percentage = event.offsetY / element.clientHeight;
+
+          const timeStamp =
+            percentage *
+              (operation.data.dayRange.end - operation.data.dayRange.start) +
+            operation.data.dayRange.start;
+
+          operation.data.todoList.push({
+            id: Math.random() + "",
+            duration: {
+              start: timeStamp,
+              end: addHours(new Date(timeStamp), 2).valueOf(),
+            },
+            desc: "do something",
+            style: {
+              color: "",
+              backgroundcolor: "",
+            },
+            status: "Pending",
+          });
         }}
       ></div>
     </div>
