@@ -1,4 +1,19 @@
-import { defineView, defineState, defineFactoryComponent } from "@shrio/shrio";
+import {
+  defineView,
+  defineState,
+  defineFactoryComponent,
+  dynamic,
+} from "@shrio/shrio";
+import { stateSuite } from "./state";
+import {
+  setHours,
+  format,
+  addHours,
+  setMinutes,
+  setMilliseconds,
+} from "date-fns";
+
+const { portal } = stateSuite;
 
 export const rangeStatus = defineState(() => {
   const reactiveState = {
@@ -12,6 +27,26 @@ export const rangeStatus = defineState(() => {
 });
 
 export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
+  const operation = portal.inject();
+
+  const level = "hours";
+
+  const start = new Date(operation.data.dayRange.start);
+  const end = new Date(operation.data.dayRange.end);
+  let cur = start;
+
+  const showEr: Date[] = [setMilliseconds(start, 0)];
+
+  for (let index = 0; ; index++) {
+    const nextTime = addHours(showEr[index], 1);
+    showEr.push(nextTime);
+    if (nextTime.valueOf() > operation.data.dayRange.end) {
+      break;
+    }
+  }
+
+  console.log(showEr);
+
   return (
     <div class={` h-full w-32 bg-gray-50 relative `}>
       <div
@@ -28,6 +63,31 @@ export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
           </div>
         </div>
       </div>
+
+      {showEr.map(
+        dynamic((setKey, date) => {
+          setKey(date.valueOf() + "");
+          const str = format(date, "hh");
+
+          return (
+            <div
+              class={` absolute`}
+              style={{
+                top: `${
+                  ((date.valueOf() - operation.data.dayRange.start) * 100) /
+                  (operation.data.dayRange.end - operation.data.dayRange.start)
+                }%`,
+              }}
+            >
+              <span
+                class={` text-gray-500 font-mono absolute flex items-center -translate-y-1/2 transform`}
+              >
+                {str}
+              </span>
+            </div>
+          );
+        })
+      )}
 
       <div
         class={`h-full w-full bg-transparent relative`}
