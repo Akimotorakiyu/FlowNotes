@@ -146,10 +146,10 @@ const FlowNoteDisplayer = defineView(() => {
               }}
             >
               <div
-                class={` h-full w-full overflow-auto  shadow shadow-orange-100`}
+                class={` h-full w-full overflow-auto border-l-4 border-blue-500 flex rounded-sm bg-green-100`}
               >
                 <textarea
-                  class={`w-full h-full outline-none resize-none px-4 py-2  text-gray-800`}
+                  class={`w-full h-full outline-none resize-none px-2 text-sm font-light  text-gray-700 bg-transparent flex-1`}
                   onblur={(event: FocusEvent) => {
                     const element = event.target as HTMLTextAreaElement;
                     if (item.desc !== element.value) {
@@ -159,6 +159,14 @@ const FlowNoteDisplayer = defineView(() => {
                 >
                   {item.desc}
                 </textarea>
+                <div class={` flex flex-col justify-between`}>
+                  <span class={`  text-gray-400 font-thin text-sm px-4`}>
+                    {format(item.duration.start, "yyyy/MM/dd/ HH:mm:ss")}
+                  </span>
+                  <span class={` text-gray-400 font-thin text-sm px-4 `}>
+                    {format(item.duration.end, "yyyy/MM/dd/ HH:mm:ss")}
+                  </span>
+                </div>
               </div>
             </div>
           );
@@ -204,9 +212,9 @@ const TimeIndicator = defineView((props: {}) => {
               }}
             >
               <span
-                class={` text-gray-500 font-mono absolute flex items-center -translate-y-1/2 transform text-xs`}
+                class={` text-gray-400 font-mono absolute flex items-center -translate-y-1/2 transform text-xs whitespace-nowrap font-thin`}
               >
-                {format(date, "dd/HH")}
+                {format(date, "MM/dd EEEE HH")}
               </span>
             </div>
           );

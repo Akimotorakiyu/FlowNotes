@@ -19,7 +19,7 @@ const bodyStateFactory = defineState((props, children, context) => {
 
 export const BodyView = defineStateView(bodyStateFactory, (props) => {
   return (
-    <div class=" mx-4">
+    <div>
       <TodoApp></TodoApp>
     </div>
   );

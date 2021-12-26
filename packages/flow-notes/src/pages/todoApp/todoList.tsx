@@ -47,7 +47,7 @@ export const FlowNotesApp = defineView((props) => {
   return (
     <>
       <div class={`h-screen flex`}>
-        <DateRangeView></DateRangeView>
+        {/* <DateRangeView></DateRangeView> */}
         <DayRangeView></DayRangeView>
         <DayFlowView></DayFlowView>
       </div>

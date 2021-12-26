@@ -1,5 +1,5 @@
 import { ITodoItem } from "./type";
-import { subHours, addHours } from "date-fns";
+import { subHours, addHours, addMinutes } from "date-fns";
 
 export const genTempData = () => {
   const todoList: ITodoItem[] = [
@@ -9,7 +9,7 @@ export const genTempData = () => {
       status: "Pending",
       duration: {
         start: Date.now(),
-        end: addHours(new Date(), 2).valueOf(),
+        end: addMinutes(new Date(), 15).valueOf(),
       },
       style: {
         color: "red",
