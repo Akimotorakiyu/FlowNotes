@@ -13,6 +13,7 @@ import {
   setSeconds,
   setMinutes,
 } from "date-fns";
+import { addMinutes } from "date-fns/esm";
 
 const { portal } = stateSuite;
 
@@ -37,7 +38,7 @@ const DayFlowNoteTimeRangeDisplayer = defineView(() => {
           setKey(item.id);
           return (
             <div
-              class={`absolute  bg-blue-300 w-full flex group flex-col`}
+              class={`absolute  bg-blue-300 w-8 flex group flex-col right-0  bg-opacity-50`}
               style={{
                 top: `${
                   ((item.duration.start - operation.data.dayRange.start) *
@@ -146,7 +147,7 @@ const FlowNoteDisplayer = defineView(() => {
               }}
             >
               <div
-                class={` h-full w-full overflow-auto border-l-4 border-blue-500 flex rounded-sm bg-green-100`}
+                class={` h-full w-full overflow-auto border-l-4 border-blue-500 flex rounded-sm bg-green-100 bg-opacity-50`}
               >
                 <textarea
                   class={`w-full h-full outline-none resize-none px-2 text-sm font-light  text-gray-700 bg-transparent flex-1`}
@@ -231,34 +232,6 @@ export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
     <>
       <div
         class={` h-full w-32 bg-gray-50 relative overflow-hidden`}
-        // onpointerup={(event: PointerEvent) => {
-        //   if (event.target !== event.currentTarget) {
-        //     return;
-        //   }
-
-        //   const element = event.target as HTMLDivElement;
-        //   const percentage = event.offsetY / element.clientHeight;
-
-        //   const timeStamp =
-        //     percentage *
-        //       (operation.data.dayRange.end - operation.data.dayRange.start) +
-        //     operation.data.dayRange.start;
-
-        //   operation.data.todoList.push({
-        //     id: Math.random() + "",
-        //     duration: {
-        //       start: timeStamp,
-        //       end: addHours(new Date(timeStamp), 2).valueOf(),
-        //     },
-        //     desc: "do something",
-        //     style: {
-        //       color: "",
-        //       backgroundcolor: "",
-        //     },
-        //     status: "Pending",
-        //   });
-        // }}
-
         onpointerdown={(event: PointerEvent) => {
           if (event.currentTarget !== event.target) {
             return;
@@ -296,6 +269,36 @@ export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
           element.addEventListener("pointerup", dealFinish);
         }}
       >
+        <div
+          class={` h-full bg-green-50 w-8 absolute right-0 `}
+          onpointerup={(event: PointerEvent) => {
+            if (event.target !== event.currentTarget) {
+              return;
+            }
+
+            const element = event.target as HTMLDivElement;
+            const percentage = event.offsetY / element.clientHeight;
+
+            const timeStamp =
+              percentage *
+                (operation.data.dayRange.end - operation.data.dayRange.start) +
+              operation.data.dayRange.start;
+
+            operation.data.todoList.push({
+              id: Math.random() + "",
+              duration: {
+                start: timeStamp,
+                end: addMinutes(new Date(timeStamp), 15).valueOf(),
+              },
+              desc: "do something",
+              style: {
+                color: "",
+                backgroundcolor: "",
+              },
+              status: "Pending",
+            });
+          }}
+        ></div>
         <DayFlowNoteTimeRangeDisplayer></DayFlowNoteTimeRangeDisplayer>
         <TimeIndicator></TimeIndicator>
       </div>
