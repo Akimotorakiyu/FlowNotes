@@ -6,7 +6,13 @@ import {
   shrioReactive,
 } from "@shrio/shrio";
 import { stateSuite } from "./state";
-import { format, addHours, setMilliseconds } from "date-fns";
+import {
+  format,
+  addHours,
+  setMilliseconds,
+  setSeconds,
+  setMinutes,
+} from "date-fns";
 
 const { portal } = stateSuite;
 
@@ -165,8 +171,8 @@ const FlowNoteDisplayer = defineView(() => {
 const TimeIndicator = defineView((props: {}) => {
   const operation = portal.inject();
 
-  const firstTimeIndicator = setMilliseconds(
-    new Date(operation.data.dayRange.start),
+  const firstTimeIndicator = setSeconds(
+    setMinutes(setMilliseconds(new Date(operation.data.dayRange.start), 0), 0),
     0
   );
 
@@ -184,12 +190,11 @@ const TimeIndicator = defineView((props: {}) => {
     <>
       {showEr.map(
         dynamic((setKey, date) => {
-          setKey(format(date, "dd-HH"));
-          console.log();
+          setKey(format(date, "yyyy/MM/dd/HH"));
 
           return (
             <div
-              id={format(date, "yyyy/mm/dd/HH")}
+              id={format(date, "yyyy/MM/dd/HH")}
               class={` absolute  select-none`}
               style={{
                 top: `${
@@ -218,33 +223,69 @@ export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
     <>
       <div
         class={` h-full w-32 bg-gray-50 relative overflow-hidden`}
-        onpointerup={(event: PointerEvent) => {
-          if (event.target !== event.currentTarget) {
+        // onpointerup={(event: PointerEvent) => {
+        //   if (event.target !== event.currentTarget) {
+        //     return;
+        //   }
+
+        //   const element = event.target as HTMLDivElement;
+        //   const percentage = event.offsetY / element.clientHeight;
+
+        //   const timeStamp =
+        //     percentage *
+        //       (operation.data.dayRange.end - operation.data.dayRange.start) +
+        //     operation.data.dayRange.start;
+
+        //   operation.data.todoList.push({
+        //     id: Math.random() + "",
+        //     duration: {
+        //       start: timeStamp,
+        //       end: addHours(new Date(timeStamp), 2).valueOf(),
+        //     },
+        //     desc: "do something",
+        //     style: {
+        //       color: "",
+        //       backgroundcolor: "",
+        //     },
+        //     status: "Pending",
+        //   });
+        // }}
+
+        onpointerdown={(event: PointerEvent) => {
+          if (event.currentTarget !== event.target) {
             return;
           }
+          const element = event.currentTarget as HTMLDivElement;
+          element.setPointerCapture(event.pointerId);
 
-          const element = event.target as HTMLDivElement;
-          console.log("", event.offsetY);
-          const percentage = event.offsetY / element.clientHeight;
+          let initOffsetY = event.offsetY;
 
-          const timeStamp =
-            percentage *
-              (operation.data.dayRange.end - operation.data.dayRange.start) +
-            operation.data.dayRange.start;
+          const dealMove = (moveEvent: PointerEvent) => {
+            const parentParentRect =
+              element.parentElement!.parentElement!.getBoundingClientRect();
 
-          operation.data.todoList.push({
-            id: Math.random() + "",
-            duration: {
-              start: timeStamp,
-              end: addHours(new Date(timeStamp), 2).valueOf(),
-            },
-            desc: "do something",
-            style: {
-              color: "",
-              backgroundcolor: "",
-            },
-            status: "Pending",
-          });
+            const height = parentParentRect!.height;
+
+            const delta =
+              ((moveEvent.offsetY - initOffsetY) *
+                (operation.data.dayRange.end - operation.data.dayRange.start)) /
+              height;
+
+            initOffsetY = moveEvent.offsetY;
+
+            operation.data.dayRange.start -= Math.round(delta);
+            operation.data.dayRange.end -= Math.round(delta);
+          };
+
+          const dealFinish = () => {
+            element.removeEventListener("pointermove", dealMove);
+            element.removeEventListener("pointerup", dealFinish);
+
+            element.releasePointerCapture(event.pointerId);
+          };
+
+          element.addEventListener("pointermove", dealMove);
+          element.addEventListener("pointerup", dealFinish);
         }}
       >
         <DayFlowNoteTimeRangeDisplayer></DayFlowNoteTimeRangeDisplayer>
@@ -294,10 +335,6 @@ export const DayRangeView = defineFactoryComponent(rangeStatus, (state) => {
 
               operation.data.dayRange.start += Math.round(delta);
               operation.data.dayRange.end -= Math.round(delta);
-              // console.log("change", delta);
-
-              // operation.data.dayRange.start
-              // operation.data.dayRange.end
             };
 
             const dealFinish = () => {
@@ -371,10 +408,6 @@ export const DayRangeView = defineFactoryComponent(rangeStatus, (state) => {
 
               operation.data.dayRange.start -= Math.round(delta);
               operation.data.dayRange.end += Math.round(delta);
-              // console.log("change", delta);
-
-              // operation.data.dayRange.start
-              // operation.data.dayRange.end
             };
 
             const dealFinish = () => {
