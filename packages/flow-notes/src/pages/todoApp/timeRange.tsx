@@ -3,6 +3,7 @@ import {
   defineState,
   defineFactoryComponent,
   dynamic,
+  shrioReactive,
 } from "@shrio/shrio";
 import { stateSuite } from "./state";
 import { format, addHours, setMilliseconds } from "date-fns";
@@ -10,10 +11,10 @@ import { format, addHours, setMilliseconds } from "date-fns";
 const { portal } = stateSuite;
 
 export const rangeStatus = defineState(() => {
-  const reactiveState = {
+  const reactiveState = shrioReactive({
     height: 100,
     offsetY: 0,
-  };
+  });
   return {
     isMouseDown: false,
     reactiveState,
@@ -30,7 +31,7 @@ const DayFlowNoteTimeRangeDisplayer = defineView(() => {
           setKey(item.id);
           return (
             <div
-              class={`absolute  bg-green-400 w-full `}
+              class={`absolute  bg-blue-300 w-full flex group flex-col`}
               style={{
                 top: `${
                   ((item.duration.start - operation.data.dayRange.start) *
@@ -42,7 +43,71 @@ const DayFlowNoteTimeRangeDisplayer = defineView(() => {
                   (operation.data.dayRange.end - operation.data.dayRange.start)
                 }%`,
               }}
-            ></div>
+            >
+              <div
+                class={` h-3 group-hover:(bg-green-300) transition cursor-pointer w-full`}
+                onpointerdown={(event: PointerEvent) => {
+                  const element = event.currentTarget as HTMLDivElement;
+                  element.setPointerCapture(event.pointerId);
+
+                  const initOffsetY = event.offsetY;
+
+                  const dealMove = (moveEvent: PointerEvent) => {
+                    const parentParentRect =
+                      element.parentElement!.parentElement!.getBoundingClientRect();
+
+                    const height = parentParentRect!.height;
+
+                    item.duration.start +=
+                      ((moveEvent.offsetY - initOffsetY) *
+                        (operation.data.dayRange.end -
+                          operation.data.dayRange.start)) /
+                      height;
+                  };
+
+                  const dealFinish = () => {
+                    element.removeEventListener("pointermove", dealMove);
+                    element.removeEventListener("pointerup", dealFinish);
+                    element.releasePointerCapture(event.pointerId);
+                  };
+
+                  element.addEventListener("pointermove", dealMove);
+                  element.addEventListener("pointerup", dealFinish);
+                }}
+              ></div>
+              <div class={`flex-1`}></div>
+              <div
+                class={` h-3 cursor-pointer group-hover:(bg-green-300) w-full`}
+                onpointerdown={(event: PointerEvent) => {
+                  const element = event.currentTarget as HTMLDivElement;
+                  element.setPointerCapture(event.pointerId);
+
+                  const initOffsetY = event.offsetY;
+
+                  const dealMove = (moveEvent: PointerEvent) => {
+                    const parentParentRect =
+                      element.parentElement!.parentElement!.getBoundingClientRect();
+
+                    const height = parentParentRect!.height;
+
+                    item.duration.end +=
+                      ((moveEvent.offsetY - initOffsetY) *
+                        (operation.data.dayRange.end -
+                          operation.data.dayRange.start)) /
+                      height;
+                  };
+
+                  const dealFinish = () => {
+                    element.removeEventListener("pointermove", dealMove);
+                    element.removeEventListener("pointerup", dealFinish);
+                    element.releasePointerCapture(event.pointerId);
+                  };
+
+                  element.addEventListener("pointermove", dealMove);
+                  element.addEventListener("pointerup", dealFinish);
+                }}
+              ></div>
+            </div>
           );
         })
       )}
@@ -121,7 +186,7 @@ const TimeIndicator = defineView((props: {}) => {
 
           return (
             <div
-              class={` absolute`}
+              class={` absolute  select-none`}
               style={{
                 top: `${
                   ((date.valueOf() - operation.data.dayRange.start) * 100) /
@@ -142,49 +207,44 @@ const TimeIndicator = defineView((props: {}) => {
   );
 });
 
-const AddNewFlowNote = defineView(() => {
-  const operation = portal.inject();
-
-  return (
-    <div
-      class={`h-full w-full bg-transparent relative`}
-      onpointerdown={(event: PointerEvent) => {
-        const element = event.target as HTMLDivElement;
-        console.log("", event.offsetY);
-        const percentage = event.offsetY / element.clientHeight;
-
-        const timeStamp =
-          percentage *
-            (operation.data.dayRange.end - operation.data.dayRange.start) +
-          operation.data.dayRange.start;
-
-        operation.data.todoList.push({
-          id: Math.random() + "",
-          duration: {
-            start: timeStamp,
-            end: addHours(new Date(timeStamp), 2).valueOf(),
-          },
-          desc: "do something",
-          style: {
-            color: "",
-            backgroundcolor: "",
-          },
-          status: "Pending",
-        });
-      }}
-    ></div>
-  );
-});
-
 export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
   const operation = portal.inject();
 
   return (
     <>
-      <div class={` h-full w-32 bg-gray-50 relative overflow-hidden`}>
+      <div
+        class={` h-full w-32 bg-gray-50 relative overflow-hidden`}
+        onpointerdown={(event: PointerEvent) => {
+          if (event.target !== event.currentTarget) {
+            return;
+          }
+
+          const element = event.target as HTMLDivElement;
+          console.log("", event.offsetY);
+          const percentage = event.offsetY / element.clientHeight;
+
+          const timeStamp =
+            percentage *
+              (operation.data.dayRange.end - operation.data.dayRange.start) +
+            operation.data.dayRange.start;
+
+          operation.data.todoList.push({
+            id: Math.random() + "",
+            duration: {
+              start: timeStamp,
+              end: addHours(new Date(timeStamp), 2).valueOf(),
+            },
+            desc: "do something",
+            style: {
+              color: "",
+              backgroundcolor: "",
+            },
+            status: "Pending",
+          });
+        }}
+      >
         <DayFlowNoteTimeRangeDisplayer></DayFlowNoteTimeRangeDisplayer>
         <TimeIndicator></TimeIndicator>
-        <AddNewFlowNote></AddNewFlowNote>
       </div>
 
       <div class={` h-full flex-1 relative overflow-hidden`}>
@@ -207,26 +267,23 @@ export const DayRangeView = defineFactoryComponent(rangeStatus, (state) => {
           onpointerdown={(event: PointerEvent) => {
             const element = event.currentTarget as HTMLDivElement;
             element.setPointerCapture(event.pointerId);
-            state.isMouseDown = true;
 
-            state.reactiveState.offsetY = event.offsetY;
-          }}
-          onpointermove={(event: PointerEvent) => {
-            if (state.isMouseDown) {
-              const element = event.currentTarget as HTMLDivElement;
+            const initOffsetY = event.offsetY;
+
+            const dealMove = (moveEvent: PointerEvent) => {
               state.reactiveState.height -=
-                (event.offsetY - state.reactiveState.offsetY) * 2;
-              element.parentElement!.style.removeProperty("height");
-              element.parentElement!.style.setProperty(
-                "height",
-                state.reactiveState.height + "px"
-              );
-            }
-          }}
-          onpointerup={(event: PointerEvent) => {
-            state.isMouseDown = false;
-            const element = event.currentTarget as HTMLDivElement;
-            element.releasePointerCapture(event.pointerId);
+                (moveEvent.offsetY - initOffsetY) * 2;
+            };
+
+            const dealFinish = () => {
+              element.removeEventListener("pointermove", dealMove);
+              element.removeEventListener("pointerup", dealFinish);
+
+              element.releasePointerCapture(event.pointerId);
+            };
+
+            element.addEventListener("pointermove", dealMove);
+            element.addEventListener("pointerup", dealFinish);
           }}
         ></div>
         <div class={`flex-1`}></div>
