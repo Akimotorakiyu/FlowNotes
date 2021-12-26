@@ -218,7 +218,7 @@ export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
     <>
       <div
         class={` h-full w-32 bg-gray-50 relative overflow-hidden`}
-        onpointerdown={(event: PointerEvent) => {
+        onpointerup={(event: PointerEvent) => {
           if (event.target !== event.currentTarget) {
             return;
           }
@@ -311,7 +311,44 @@ export const DayRangeView = defineFactoryComponent(rangeStatus, (state) => {
             element.addEventListener("pointerup", dealFinish);
           }}
         ></div>
-        <div class={`flex-1`}></div>
+        <div
+          class={`flex-1`}
+          style={{ cursor: "grab" }}
+          onpointerdown={(event: PointerEvent) => {
+            const element = event.currentTarget as HTMLDivElement;
+            element.setPointerCapture(event.pointerId);
+
+            let initOffsetY = event.offsetY;
+
+            const dealMove = (moveEvent: PointerEvent) => {
+              const parentParentRect =
+                element.parentElement!.parentElement!.getBoundingClientRect();
+
+              const height = parentParentRect!.height;
+
+              const delta =
+                ((moveEvent.offsetY - initOffsetY) *
+                  (operation.data.weekRange.end -
+                    operation.data.weekRange.start)) /
+                height;
+
+              initOffsetY = moveEvent.offsetY;
+
+              operation.data.dayRange.start -= Math.round(delta);
+              operation.data.dayRange.end -= Math.round(delta);
+            };
+
+            const dealFinish = () => {
+              element.removeEventListener("pointermove", dealMove);
+              element.removeEventListener("pointerup", dealFinish);
+
+              element.releasePointerCapture(event.pointerId);
+            };
+
+            element.addEventListener("pointermove", dealMove);
+            element.addEventListener("pointerup", dealFinish);
+          }}
+        ></div>
         <div
           class={` h-3 cursor-pointer group-hover:(bg-green-300)`}
           onpointerdown={(event: PointerEvent) => {
