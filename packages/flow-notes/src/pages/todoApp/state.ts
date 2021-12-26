@@ -10,10 +10,10 @@ export const stateSuite = defineStateSuite((props: {}, children, context) => {
     methods: {},
     data: {
       todoList,
-      dayRange: {
+      dayRange: shrioReactive({
         start: subHours(new Date(), 8).valueOf(),
         end: addHours(new Date(), 8).valueOf(),
-      },
+      }),
       weekRange: {
         start: subDays(new Date(), 1).valueOf(),
         end: addDays(new Date(), 1).valueOf(),

@@ -58,11 +58,12 @@ const DayFlowNoteTimeRangeDisplayer = defineView(() => {
 
                     const height = parentParentRect!.height;
 
-                    item.duration.start +=
+                    item.duration.start += Math.round(
                       ((moveEvent.offsetY - initOffsetY) *
                         (operation.data.dayRange.end -
                           operation.data.dayRange.start)) /
-                      height;
+                        height
+                    );
                   };
 
                   const dealFinish = () => {
@@ -90,11 +91,12 @@ const DayFlowNoteTimeRangeDisplayer = defineView(() => {
 
                     const height = parentParentRect!.height;
 
-                    item.duration.end +=
+                    item.duration.end += Math.round(
                       ((moveEvent.offsetY - initOffsetY) *
                         (operation.data.dayRange.end -
                           operation.data.dayRange.start)) /
-                      height;
+                        height
+                    );
                   };
 
                   const dealFinish = () => {
@@ -182,10 +184,12 @@ const TimeIndicator = defineView((props: {}) => {
     <>
       {showEr.map(
         dynamic((setKey, date) => {
-          setKey(date.valueOf() + "");
+          setKey(format(date, "dd-HH"));
+          console.log();
 
           return (
             <div
+              id={format(date, "yyyy/mm/dd/HH")}
               class={` absolute  select-none`}
               style={{
                 top: `${
@@ -195,9 +199,9 @@ const TimeIndicator = defineView((props: {}) => {
               }}
             >
               <span
-                class={` text-gray-500 font-mono absolute flex items-center -translate-y-1/2 transform`}
+                class={` text-gray-500 font-mono absolute flex items-center -translate-y-1/2 transform text-xs`}
               >
-                {format(date, "HH")}
+                {format(date, "dd/HH")}
               </span>
             </div>
           );
@@ -277,8 +281,21 @@ export const DayRangeView = defineFactoryComponent(rangeStatus, (state) => {
             const initOffsetY = event.offsetY;
 
             const dealMove = (moveEvent: PointerEvent) => {
-              // state.reactiveState.height -=
-              //   (moveEvent.offsetY - initOffsetY) * 2;
+              const parentParentRect =
+                element.parentElement!.parentElement!.getBoundingClientRect();
+
+              const height = parentParentRect!.height;
+
+              const delta =
+                ((moveEvent.offsetY - initOffsetY) *
+                  (operation.data.weekRange.end -
+                    operation.data.weekRange.start)) /
+                height;
+
+              operation.data.dayRange.start += Math.round(delta);
+              operation.data.dayRange.end -= Math.round(delta);
+              // console.log("change", delta);
+
               // operation.data.dayRange.start
               // operation.data.dayRange.end
             };
@@ -295,7 +312,45 @@ export const DayRangeView = defineFactoryComponent(rangeStatus, (state) => {
           }}
         ></div>
         <div class={`flex-1`}></div>
-        <div class={` h-3 cursor-pointer group-hover:(bg-green-300)`}></div>
+        <div
+          class={` h-3 cursor-pointer group-hover:(bg-green-300)`}
+          onpointerdown={(event: PointerEvent) => {
+            const element = event.currentTarget as HTMLDivElement;
+            element.setPointerCapture(event.pointerId);
+
+            const initOffsetY = event.offsetY;
+
+            const dealMove = (moveEvent: PointerEvent) => {
+              const parentParentRect =
+                element.parentElement!.parentElement!.getBoundingClientRect();
+
+              const height = parentParentRect!.height;
+
+              const delta =
+                ((moveEvent.offsetY - initOffsetY) *
+                  (operation.data.weekRange.end -
+                    operation.data.weekRange.start)) /
+                height;
+
+              operation.data.dayRange.start -= Math.round(delta);
+              operation.data.dayRange.end += Math.round(delta);
+              // console.log("change", delta);
+
+              // operation.data.dayRange.start
+              // operation.data.dayRange.end
+            };
+
+            const dealFinish = () => {
+              element.removeEventListener("pointermove", dealMove);
+              element.removeEventListener("pointerup", dealFinish);
+
+              element.releasePointerCapture(event.pointerId);
+            };
+
+            element.addEventListener("pointermove", dealMove);
+            element.addEventListener("pointerup", dealFinish);
+          }}
+        ></div>
       </div>
     </div>
   );
