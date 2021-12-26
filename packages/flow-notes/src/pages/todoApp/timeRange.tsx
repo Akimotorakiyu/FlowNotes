@@ -254,12 +254,18 @@ export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
   );
 });
 export const DayRangeView = defineFactoryComponent(rangeStatus, (state) => {
+  const operation = portal.inject();
+
   return (
     <div class={` h-full w-10 bg-gray-200 flex items-center`}>
       <div
         class={`bg-light-50 flex flex-1 flex-col min-h-min group ease`}
         style={{
-          height: `${state.reactiveState.height}px`,
+          height: `${
+            ((operation.data.dayRange.end - operation.data.dayRange.start) *
+              100) /
+            (operation.data.weekRange.end - operation.data.weekRange.start)
+          }%`,
         }}
       >
         <div
@@ -271,8 +277,10 @@ export const DayRangeView = defineFactoryComponent(rangeStatus, (state) => {
             const initOffsetY = event.offsetY;
 
             const dealMove = (moveEvent: PointerEvent) => {
-              state.reactiveState.height -=
-                (moveEvent.offsetY - initOffsetY) * 2;
+              // state.reactiveState.height -=
+              //   (moveEvent.offsetY - initOffsetY) * 2;
+              // operation.data.dayRange.start
+              // operation.data.dayRange.end
             };
 
             const dealFinish = () => {
