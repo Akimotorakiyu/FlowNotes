@@ -74,6 +74,7 @@ const DayFlowNoteTimeRangeDisplayer = defineView(() => {
                   };
 
                   const dealFinish = () => {
+                    operation.methods.save();
                     element.removeEventListener("pointermove", dealMove);
                     element.removeEventListener("pointerup", dealFinish);
                     element.releasePointerCapture(event.pointerId);
@@ -110,6 +111,7 @@ const DayFlowNoteTimeRangeDisplayer = defineView(() => {
                     element.removeEventListener("pointermove", dealMove);
                     element.removeEventListener("pointerup", dealFinish);
                     element.releasePointerCapture(event.pointerId);
+                    operation.methods.save();
                   };
 
                   element.addEventListener("pointermove", dealMove);
@@ -129,7 +131,7 @@ const FlowNoteDisplayer = defineView(() => {
   return (
     <>
       {operation.data.todoList.map(
-        dynamic((setKey, item) => {
+        dynamic((setKey, item, index) => {
           setKey(item.id);
           return (
             <div
@@ -151,11 +153,12 @@ const FlowNoteDisplayer = defineView(() => {
               >
                 <textarea
                   class={`w-full h-full outline-none resize-none px-2 text-sm font-light  text-gray-700 bg-transparent flex-1`}
-                  onblur={(event: FocusEvent) => {
+                  onchange={(event: FocusEvent) => {
                     const element = event.target as HTMLTextAreaElement;
                     if (item.desc !== element.value) {
                       item.desc = element.value;
                     }
+                    operation.methods.save();
                   }}
                 >
                   {item.desc}
@@ -164,6 +167,18 @@ const FlowNoteDisplayer = defineView(() => {
                   <span class={`  text-gray-400 font-thin text-sm px-4`}>
                     {format(item.duration.start, "yyyy/MM/dd/ HH:mm:ss")}
                   </span>
+                  <button
+                    onclick={() => {
+                      const data = JSON.parse(
+                        JSON.stringify(operation.data.todoList)
+                      );
+                      data.splice(index, 1);
+                      operation.data.todoList = data;
+                      operation.methods.save();
+                    }}
+                  >
+                    删除
+                  </button>
                   <span class={` text-gray-400 font-thin text-sm px-4 `}>
                     {format(item.duration.end, "yyyy/MM/dd/ HH:mm:ss")}
                   </span>
@@ -284,7 +299,7 @@ export const DayFlowView = defineFactoryComponent(rangeStatus, (state) => {
                 (operation.data.dayRange.end - operation.data.dayRange.start) +
               operation.data.dayRange.start;
 
-            operation.data.todoList.push({
+            operation.methods.add({
               id: Math.random() + "",
               duration: {
                 start: timeStamp,
